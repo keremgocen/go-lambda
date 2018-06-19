@@ -4,7 +4,7 @@ deps:
 	go get -u ./...
 
 clean: 
-	rm -rf ./hello-world/hello-world
+	rm -rf ./reactioneer/reactioneer
 	
 build:
-	GOOS=linux GOARCH=amd64 go build -o hello-world/hello-world ./hello-world
+	GOOS=linux GOARCH=amd64 go build -o reactioneer/reactioneer ./reactioneer

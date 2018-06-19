@@ -1,0 +1,22 @@
+{
+    "token": "VALUE",
+    "team_id": "T4HM7J30E",
+    "api_app_id": "AB8TYNP7D",
+    "event": {
+        "type": "reaction_added",
+        "user": "U4G9UB4M6",
+        "item": {
+            "type": "message",
+            "channel": "C4H2AFYQ4",
+            "ts": "1520959206.000601"
+        },
+        "reaction": "slightly_smiling_face",
+        "event_ts": "1529412415.000135"
+    },
+    "type": "event_callback",
+    "event_id": "EvBB0SM8TG",
+    "event_time": 1529412415,
+    "authed_users": [
+        "U4G9UB4M6"
+    ]
+}
