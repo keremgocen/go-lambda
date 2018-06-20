@@ -1,73 +1,88 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
-	"net/http/httptest"
-	"os"
+	"reflect"
 	"testing"
+
+	"github.com/aws/aws-lambda-go/events"
 )
 
-func TestHandler(t *testing.T) {
-	// t.Run("Unable to get IP", func(t *testing.T) {
-	// 	DefaultHTTPGetAddress = "http://127.0.0.1:12345"
-
-	// 	_, err := handler(events.APIGatewayProxyRequest{})
-	// 	if err == nil {
-	// 		t.Fatal("Error failed to trigger with an invalid request")
-	// 	}
-	// })
-
-	// t.Run("Non 200 Response", func(t *testing.T) {
-	// 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// 		w.WriteHeader(500)
-	// 	}))
-	// 	defer ts.Close()
-
-	// 	DefaultHTTPGetAddress = ts.URL
-
-	// 	_, err := handler(events.APIGatewayProxyRequest{})
-	// 	if err != nil && err.Error() != ErrNon200Response.Error() {
-	// 		t.Fatalf("Error failed to trigger with an invalid HTTP response: %v", err)
-	// 	}
-	// })
-
-	// t.Run("Unable decode IP", func(t *testing.T) {
-	// 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// 		w.WriteHeader(500)
-	// 	}))
-	// 	defer ts.Close()
-
-	// 	DefaultHTTPGetAddress = ts.URL
-
-	// 	_, err := handler(events.APIGatewayProxyRequest{})
-	// 	if err == nil {
-	// 		t.Fatal("Error failed to trigger with an invalid HTTP response")
-	// 	}
-	// })
-
-	t.Run("Successful Request", func(t *testing.T) {
-		os.Setenv("SLACK_TOKEN", "VALUE")
-
-		ts := httptest.NewServer(
-			http.HandlerFunc(
-				func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusBadGateway)
-					w.Header().Set("Content-Type", "application/json")
-				}))
-		defer ts.Close()
-
-		request := SlackRequest{
-			Token:     "VALUE",
-			EventType: "alo",
-		}
-
-		event, err := handler(request)
-		fmt.Println(event.StatusCode)
-		fmt.Println(event.Headers)
-		fmt.Println(event.Body)
-		if err != nil {
-			t.Fatal("Everything should be ok")
-		}
-	})
+func Test_handler(t *testing.T) {
+	type args struct {
+		reaction SlackRequest
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    events.APIGatewayProxyResponse
+		wantErr error
+	}{
+		{
+			"token verification fail",
+			args{
+				SlackRequest{
+					Token:     "HELLO",
+					Challenge: "challenge",
+				}},
+			events.APIGatewayProxyResponse{
+				StatusCode: http.StatusUnauthorized,
+				Headers:    jsonHeader,
+			},
+			errTokenVerification,
+		},
+		{
+			"slack event success",
+			args{
+				SlackRequest{
+					Token:     "VALUE",
+					EventType: eventCallback,
+				}},
+			events.APIGatewayProxyResponse{
+				StatusCode: http.StatusOK,
+				Headers:    jsonHeader,
+			},
+			nil,
+		},
+		{
+			"unknown event",
+			args{
+				SlackRequest{
+					Token:     "VALUE",
+					EventType: "unknown event",
+				}},
+			events.APIGatewayProxyResponse{
+				StatusCode: http.StatusBadRequest,
+				Headers:    jsonHeader,
+			},
+			errUnknownEventType,
+		},
+		{
+			"challenge success",
+			args{
+				SlackRequest{
+					Token:     "VALUE",
+					Challenge: "challenge",
+					EventType: urlVerification,
+				}},
+			events.APIGatewayProxyResponse{
+				StatusCode: http.StatusOK,
+				Headers:    jsonHeader,
+				Body:       (`{"challenge":"challenge"}`),
+			},
+			nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := handler(tt.args.reaction)
+			if (err != nil) && (err != tt.wantErr) {
+				t.Errorf("handler() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("handler() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

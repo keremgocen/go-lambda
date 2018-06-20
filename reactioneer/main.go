@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -55,6 +56,7 @@ func handler(reaction SlackRequest) (events.APIGatewayProxyResponse, error) {
 	if reaction.Token != os.Getenv("SLACK_TOKEN") {
 		return events.APIGatewayProxyResponse{
 			StatusCode: http.StatusUnauthorized,
+			Headers:    jsonHeader,
 		}, errTokenVerification
 	}
 
@@ -67,11 +69,12 @@ func handler(reaction SlackRequest) (events.APIGatewayProxyResponse, error) {
 	} else if reaction.EventType != eventCallback {
 		return events.APIGatewayProxyResponse{
 			StatusCode: http.StatusBadRequest,
+			Headers:    jsonHeader,
 		}, errUnknownEventType
 	}
 
 	// TODO record dynamodb event
-	fmt.Println("new event received for reaction", reaction)
+	log.Println("new event received for reaction", reaction)
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: http.StatusOK,
