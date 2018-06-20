@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  reactioneer
+  
+  Created from default SAM Template for golang
+  A Lambda handler for receiving Slack Event API requests
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 5
+
+Resources:
+  Reactioneer:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: reactioneer/
+      Handler: reactioneer
+      Runtime: go1.x
+      Tracing: Active # https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
+      Events:
+        CatchAll:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /hello
+            Method: POST
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          SLACK_TOKEN: VALUE
+
+Outputs:
+  ReactioneerAPI:
+    Description: "API Gateway endpoint URL for Prod environment for Reactioneer function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+
+  Reactioneer:
+    Description: "Slack Event API handler"
+    Value: !GetAtt Reactioneer.Arn
+
+  ReactioneerIamRole:
+    Description: "Implicit IAM Role created for Reactioneer function"
+    Value: !GetAtt ReactioneerRole.Arn
