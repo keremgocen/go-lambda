@@ -4,5 +4,7 @@ go:
   - "1.x"
 before_install:
   - go get github.com/mattn/goveralls
+  - go get github.com/aws/aws-lambda-go/events
+  - go get github.com/aws/aws-lambda-go/lambda
 script:
   - $GOPATH/bin/goveralls -service=travis-ci
