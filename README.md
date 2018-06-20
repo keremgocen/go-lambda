@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/keremgocen/go-lambda.svg?branch=master)](https://travis-ci.org/keremgocen/go-lambda)
+[![Coverage Status](https://coveralls.io/repos/github/keremgocen/go-lambda/badge.svg)](https://coveralls.io/github/keremgocen/go-lambda)
+
 # sam-app
 
 This is a sample template for sam-app - Below is a brief explanation of what we have generated for you:

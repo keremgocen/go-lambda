@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 	"reflect"
 	"testing"
 
@@ -9,6 +10,7 @@ import (
 )
 
 func Test_handler(t *testing.T) {
+	os.Setenv("SLACK_TOKEN", "VALUE")
 	type args struct {
 		reaction SlackRequest
 	}
